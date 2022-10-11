@@ -29,6 +29,11 @@ import {
   selectTemperature,
 } from "../device/deviceSlice";
 
+// TEMP: For fork warning.
+import MuiLink from "@mui/material/Link";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
+
 export default function Header() {
   const { t } = useTranslation("navigation");
   const location = useLocation();
@@ -67,6 +72,7 @@ export default function Header() {
     case "/wtfos/update": title = t("titleWtfosUpdate"); break;
     case "/wtfos/install": title = t("titleWtfosInstall"); break;
     case "/wtfos/remove": title = t("titleWtfosRemove"); break;
+    case "/osd-overlay": title = "OSD Overlay"; break;
     default: title = t("titleHome");
   }
 
@@ -81,111 +87,137 @@ export default function Header() {
   }, [location.pathname]);
 
   return (
-    <Box
-      marginBottom={2}
-      sx={{ flexGrow: 1 }}
-    >
-      <AppBar
-        position="static"
+    <Stack spacing={2} marginBottom={2}>
+      <Box
+        sx={{ flexGrow: 1 }}
       >
-        <Toolbar>
-          <IconButton
-            aria-controls={open ? "menu-appbar" : null}
-            aria-expanded={open ? "true" : undefined}
-            aria-haspopup="true"
-            aria-label="menu"
-            color="inherit"
-            edge="start"
-            onClick={handleClick}
-            size="large"
-            sx={{ mr: 2 }}
+        <AppBar
+          position="static"
+        >
+          <Toolbar>
+            <IconButton
+              aria-controls={open ? "menu-appbar" : null}
+              aria-expanded={open ? "true" : undefined}
+              aria-haspopup="true"
+              aria-label="menu"
+              color="inherit"
+              edge="start"
+              onClick={handleClick}
+              size="large"
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            <Menu
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              id="menu-appbar"
+              keepMounted
+              onClose={handleClose}
+              open={open}
+            >
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/"
+              >
+                {t("menuHome")}
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/packages"
+              >
+                {t("menuPackageManager")}
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/startup"
+              >
+                {t("menuStartup")}
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/cli"
+              >
+                {t("menuCli")}
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/wtfos"
+              >
+                {t("menuWtfos")}
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/root"
+              >
+                {t("menuRoot")}
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/osd-overlay"
+              >
+                OSD Overlay
+              </MenuItem>
+
+              <MenuItem
+                component={Link}
+                onClick={handleClose}
+                to="/about"
+              >
+                {t("menuAbout")}
+              </MenuItem>
+            </Menu>
+
+            <Typography
+              component="div"
+              sx={{ flexGrow: 1 }}
+              variant="h6"
+            >
+              {title}
+            </Typography>
+
+            <Typography>
+              {name}
+            </Typography>
+
+            <LanguageSwitcher />
+          </Toolbar>
+        </AppBar>
+      </Box>
+
+      <Alert
+        severity="error"
+        variant="filled"
+      >
+        <Typography>
+          {"This is a development fork. Perhaps you meant to go to the "}
+
+          <MuiLink
+            href="https://fpv.wtf/"
           >
-            <MenuIcon />
-          </IconButton>
+            official configurator
+          </MuiLink>
 
-          <Menu
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-            id="menu-appbar"
-            keepMounted
-            onClose={handleClose}
-            open={open}
-          >
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/"
-            >
-              {t("menuHome")}
-            </MenuItem>
-
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/packages"
-            >
-              {t("menuPackageManager")}
-            </MenuItem>
-
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/startup"
-            >
-              {t("menuStartup")}
-            </MenuItem>
-
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/cli"
-            >
-              {t("menuCli")}
-            </MenuItem>
-
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/wtfos"
-            >
-              {t("menuWtfos")}
-            </MenuItem>
-
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/root"
-            >
-              {t("menuRoot")}
-            </MenuItem>
-
-            <MenuItem
-              component={Link}
-              onClick={handleClose}
-              to="/about"
-            >
-              {t("menuAbout")}
-            </MenuItem>
-          </Menu>
-
-          <Typography
-            component="div"
-            sx={{ flexGrow: 1 }}
-            variant="h6"
-          >
-            {title}
-          </Typography>
-
-          <Typography>
-            {name}
-          </Typography>
-
-          <LanguageSwitcher />
-        </Toolbar>
-      </AppBar>
-    </Box>
+          ?
+        </Typography>
+      </Alert>
+    </Stack>
   );
 }

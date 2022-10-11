@@ -7,6 +7,7 @@ import {
 import AdbRouter from "./AdbRouter";
 import Footer from "./features/navigation/Footer";
 import Root from "./features/root/Root";
+import OsdOverlay from "./features/osd-overlay/OsdOverlay";
 
 export default function Router() {
   return(
@@ -15,6 +16,11 @@ export default function Router() {
         <Route
           element={<Root />}
           path="/root"
+        />
+
+        <Route
+          element={<OsdOverlay />}
+          path="osd-overlay"
         />
 
         <Route

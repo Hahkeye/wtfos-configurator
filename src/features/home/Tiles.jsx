@@ -11,6 +11,7 @@ import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import StartIcon from "@mui/icons-material/Start";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
+import DvrIcon from "@mui/icons-material/Dvr";
 
 import SvgIcon from "@mui/material/SvgIcon";
 import { ReactComponent as AlienSvg } from "../../assets/icons/alien-white.svg";
@@ -127,6 +128,21 @@ export default function Tiles() {
         xs={12}
       >
         <Tile
+          description="Got some sweet DVR? Use this to overlay your recorded OSD on top of it!"
+          linkTo="osd-overlay"
+          title="OSD Overlay"
+        >
+          <DvrIcon fontSize="large" />
+        </Tile>
+      </Grid>
+
+      <Grid
+        item
+        md={3}
+        sm={6}
+        xs={12}
+      >
+        <Tile
           description={t("tileWikiDescription")}
           href="https://github.com/fpv-wtf/wtfos/wiki"
           title={t("tileWikiTitle")}
@@ -167,6 +183,7 @@ export default function Tiles() {
           />
         </Tile>
       </Grid>
+
     </Grid>
   );
 }
