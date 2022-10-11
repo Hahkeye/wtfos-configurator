@@ -14,6 +14,10 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.1.1",
     "@testing-library/user-event": "^14.1.1",
+    "@types/jest": "^29.1.2",
+    "@types/node": "^18.8.4",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
     "@yume-chan/adb": "^0.0.15",
     "@yume-chan/adb-backend-webusb": "^0.0.15",
     "@yume-chan/adb-credential-web": "^0.0.15",
@@ -28,6 +32,7 @@
     "react-redux": "^8.0.1",
     "react-router-dom": "^6.3.0",
     "react-scripts": "5.0.1",
+    "typescript": "<4.7.0",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.4",
     "with-staged": "^1.0.2",
@@ -39,18 +44,12 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint ./src --ext .jsx,.js",
-    "lint-commit": "with-staged '**/*.{js,jsx}' -- yarn eslint",
+    "lint": "eslint ./src --ext .jsx,.js,.ts,.tsx",
+    "lint-commit": "with-staged '**/*.{js,jsx,ts,tsx}' -- yarn eslint",
     "remove-console": "babel --plugins transform-remove-console ./src/utils/exploit --out-dir ./src/utils/exploit-no-console",
     "js-obfuscate": "javascript-obfuscator ./src/utils/exploit-no-console --output src/utils/obfuscated-exploit --split-strings=true --string-array-encoding base64,rc4",
     "obfuscate": "yarn run remove-console && yarn run js-obfuscate",
     "device-shell": "wtfos-configurator-reverse-shell-server"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
