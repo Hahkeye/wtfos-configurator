@@ -13,7 +13,6 @@ import {
 } from "./fonts";
 import { OsdReader } from "./osd";
 import MP4Box from "mp4box";
-import { WidgetsSharp } from "@mui/icons-material";
 
 const MAX_DISPLAY_X = 60;
 const MAX_DISPLAY_Y = 22;
@@ -108,9 +107,15 @@ export class VideoWorker {
 
         let font: Font;
         if (this.hd) {
-          font = osdFrameChar <= 255 ? this.fontPack!.hd1 : this.fontPack!.hd2;
+          font =
+            osdFrameChar < TILES_PER_PAGE
+              ? this.fontPack!.hd1
+              : this.fontPack!.hd2;
         } else {
-          font = osdFrameChar <= 255 ? this.fontPack!.sd1 : this.fontPack!.sd2;
+          font =
+            osdFrameChar < TILES_PER_PAGE
+              ? this.fontPack!.sd1
+              : this.fontPack!.sd2;
         }
 
         osdContext.drawImage(

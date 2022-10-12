@@ -12,6 +12,7 @@
     "eslint:recommended",
     "plugin:react/recommended",
     "react-app"
+
   ],
   "rules": {
     "react/jsx-indent": ["warn", 2],
@@ -21,7 +22,7 @@
     "react/no-danger": "warn",
     "quotes": 1,
     "indent": ["warn", 2, { "SwitchCase": 1 }],
-    "no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
     "space-infix-ops": "error",
     "arrow-parens": "error",
     "eqeqeq": "error",
