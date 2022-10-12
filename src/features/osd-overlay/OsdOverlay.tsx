@@ -137,7 +137,7 @@ export default function OsdOverlay() {
         <Alert severity="info">
           OSD recording is an opt-in feature.
           <pre style={{ marginBottom: 0 }}>
-            $ package-config set msp-osd rec_enabled true
+            $ package-config set msp-osd rec_enabled true<br />
             $ package-config apply msp-osd
           </pre>
         </Alert>
