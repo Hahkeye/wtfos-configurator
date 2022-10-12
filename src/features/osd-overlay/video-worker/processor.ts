@@ -111,17 +111,20 @@ export class Processor {
     const reader = stream.getReader();
 
     let bytesRead = 0;
-    let done = false;
-    while (done) {
+    while (true) { // eslint-disable-line no-constant-condition
       const {
-        done, value,
+        done,
+        value,
       } = await reader.read();
-      if (!done) {
-        const buffer = value.buffer;
-        (buffer as any).fileStart = bytesRead;
-        this.inFile!.appendBuffer(buffer);
-        bytesRead += value.byteLength;
+
+      if (done) {
+        break;
       }
+
+      const buffer = value.buffer;
+      (buffer as any).fileStart = bytesRead;
+      this.inFile!.appendBuffer(buffer);
+      bytesRead += value.byteLength;
     }
   }
 
