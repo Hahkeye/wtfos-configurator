@@ -204,15 +204,16 @@ export default function Header() {
 
       <Alert
         severity="error"
-        variant="filled"
+        variant="outlined"
       >
         <Typography>
-          {"This is a development fork. Perhaps you meant to go to the "}
+          {"This is a development fork and things may go terribly wrong. Perhaps you meant to go to the "}
 
           <MuiLink
             href="https://fpv.wtf/"
+            color="inherit"
           >
-            official configurator
+            stable configurator
           </MuiLink>
 
           ?
