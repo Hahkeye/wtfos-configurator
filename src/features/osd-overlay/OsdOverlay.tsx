@@ -130,7 +130,7 @@ export default function OsdOverlay() {
   const progressValue = progressMax ? (progress / progressMax) * 100 : 0;
 
   return (
-    <Container>
+    <Container fixed sx={{ paddingBottom: 3 }}>
       <Header />
 
       <Stack component="form" spacing={2}>
