@@ -11,7 +11,7 @@ import {
 interface VideoWorkerManagerCallbacks {
   onProgress: (progress?: number, preview?: ImageBitmap) => void;
   onProgressInit: (progressMax: number) => void;
-  onFileOut?: () => void;
+  onFileOut?: (objectUrl: string) => void;
 }
 
 class VideoWorkerManager {
@@ -35,17 +35,8 @@ class VideoWorkerManager {
 
     switch (message.type) {
       case VideoWorkerShared.MessageType.FILE_OUT: {
-        const a = document.createElement("a");
-        a.href = message.blobString;
-        a.download = "output.mp4";
-        a.click();
-
-        window.setTimeout(() => {
-          URL.revokeObjectURL(message.blobString);
-        }, 1000);
-
         if (this.callbacks?.onFileOut) {
-          this.callbacks.onFileOut();
+          this.callbacks.onFileOut(message.blobString);
         }
 
         break;
@@ -82,6 +73,9 @@ export default function OsdOverlay() {
   const [progress, setProgress] = React.useState(0);
   const [progressMax, setProgressMax] = React.useState(0);
 
+  const [inProgress, setInProgress] = React.useState(false);
+  const [downloadLink, setDownloadLink] = React.useState<string | null>(null);
+
   React.useEffect(() => {
     const canvas = document.getElementById("preview") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d")!;
@@ -105,10 +99,20 @@ export default function OsdOverlay() {
         }
       },
       onProgressInit: setProgressMax,
+      onFileOut: (objectUrl: string) => {
+        setInProgress(false);
+        setDownloadLink(objectUrl);
+      },
     });
-  });
+  }, []);
 
   const handleConvert = async () => {
+    if (downloadLink) {
+      URL.revokeObjectURL(downloadLink);
+      setDownloadLink(null);
+    }
+
+    setInProgress(true);
     videoManager.postMessage({
       type: VideoWorkerShared.MessageType.FILE_IN,
       fontFiles: fontFiles!,
@@ -117,7 +121,14 @@ export default function OsdOverlay() {
     } as VideoWorkerShared.FileInMessage);
   };
 
-  const convertEnabled = videoFile && osdFile && fontFiles?.length;
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = downloadLink!;
+    link.download = "output.mp4";
+    link.click();
+  };
+
+  const convertEnabled = videoFile && osdFile && fontFiles?.length && !inProgress;
   const progressValue = progressMax ? (progress / progressMax) * 100 : 0;
 
   return (
@@ -179,11 +190,20 @@ export default function OsdOverlay() {
         />
 
         <Button
-          onClick={handleConvert}
           disabled={!convertEnabled}
+          onClick={handleConvert}
           variant="contained"
         >
           Convert
+        </Button>
+
+        <Button
+          color="secondary"
+          disabled={!downloadLink}
+          onClick={handleDownload}
+          variant="contained"
+        >
+          Download
         </Button>
       </Stack>
     </Container>
