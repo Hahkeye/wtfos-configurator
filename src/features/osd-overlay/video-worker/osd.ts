@@ -42,6 +42,10 @@ export class OsdReader {
       },
     };
 
+    if (this.header.config.charWidth === 31) {
+      this.header.config.charWidth = 30;
+    }
+
     while (stream.getOffset() < data.byteLength) {
       const frameNumber = stream.getNextUint32();
       const frameSize = stream.getNextUint32();

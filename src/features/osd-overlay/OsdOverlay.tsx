@@ -39,7 +39,10 @@ class VideoWorkerManager {
         a.href = message.blobString;
         a.download = "output.mp4";
         a.click();
-        URL.revokeObjectURL(message.blobString);
+
+        window.setTimeout(() => {
+          URL.revokeObjectURL(message.blobString);
+        }, 1000);
 
         if (this.callbacks?.onFileOut) {
           this.callbacks.onFileOut();
@@ -96,19 +99,7 @@ export default function OsdOverlay() {
             canvas.width = 640;
           }
 
-          const aspectRatio = preview.width / preview.height;
-          const canvasWidth = canvas.width;
-          const canvasHeight = canvas.height;
-          const canvasAspectRatio = canvasWidth / canvasHeight;
-          if (aspectRatio > canvasAspectRatio) {
-            const newWidth = canvasHeight * aspectRatio;
-            const offset = (canvasWidth - newWidth) / 2;
-            ctx?.drawImage(preview, offset, 0, newWidth, canvasHeight);
-          } else {
-            const newHeight = canvasWidth / aspectRatio;
-            const offset = (canvasHeight - newHeight) / 2;
-            ctx?.drawImage(preview, 0, offset, canvasWidth, newHeight);
-          }
+          ctx!.drawImage(preview, 0, 0, canvas.width, canvas.height);
 
           preview.close();
         }
@@ -135,7 +126,7 @@ export default function OsdOverlay() {
 
       <Stack component="form" spacing={2}>
         <Alert severity="info">
-          OSD recording is an opt-in feature.
+          OSD recording is an opt-in feature on the goggle side.
           <pre style={{ marginBottom: 0 }}>
             $ package-config set msp-osd rec_enabled true<br />
             $ package-config apply msp-osd

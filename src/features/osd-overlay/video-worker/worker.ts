@@ -5,10 +5,6 @@ import { Processor } from "./processor";
 import {
   Font,
   FontPack,
-  SD_TILE_WIDTH,
-  SD_TILE_HEIGHT,
-  HD_TILE_WIDTH,
-  HD_TILE_HEIGHT,
   TILES_PER_PAGE,
 } from "./fonts";
 import { OsdReader } from "./osd";
@@ -29,6 +25,11 @@ export class VideoWorker {
   outWidth?: number;
   outHeight?: number;
 
+  osdCanvas?: OffscreenCanvas;
+  osdCtx?: OffscreenCanvasRenderingContext2D;
+  frameCanvas?: OffscreenCanvas;
+  frameCtx?: OffscreenCanvasRenderingContext2D;
+
   constructor() {
     this.processor = new Processor({
       infoReady: this.infoReady.bind(this),
@@ -43,6 +44,8 @@ export class VideoWorker {
   infoReady(info: MP4Box.ISOFileInfo) {
     const width = info.videoTracks[0].track_width;
     const height = info.videoTracks[0].track_height;
+
+    console.log(this.osdReader!.header.config);
 
     if (width === 1280 && height === 720) {
       this.wide = true;
@@ -64,6 +67,16 @@ export class VideoWorker {
 
     this.outWidth = outWidth;
     this.outHeight = outHeight;
+
+    this.osdCanvas = new OffscreenCanvas(
+      this.osdReader!.header.config.fontWidth * this.osdReader!.header.config.charWidth,
+      this.osdReader!.header.config.fontHeight * this.osdReader!.header.config.charHeight
+    );
+    this.osdCtx = this.osdCanvas.getContext("2d")!;
+
+    this.frameCanvas = new OffscreenCanvas(this.outWidth!, this.outHeight!);
+    this.frameCtx = this.frameCanvas.getContext("2d")!;
+
     this.processor.processSamples({
       width: outWidth,
       height: outHeight,
@@ -71,20 +84,18 @@ export class VideoWorker {
   }
 
   modifyFrame(frame: VideoFrame, frameIndex: number): VideoFrame {
-    const osdCanvas = new OffscreenCanvas(
-      (this.hd ? HD_TILE_WIDTH : SD_TILE_WIDTH) *
-        this.osdReader!.header.config.charWidth,
-      (this.hd ? HD_TILE_HEIGHT : SD_TILE_HEIGHT) *
-        this.osdReader!.header.config.charHeight
-    );
-    const osdContext = osdCanvas.getContext("2d")!;
+    const osdCanvas = this.osdCanvas!;
+    const osdCtx = this.osdCtx!;
+    const frameCanvas = this.frameCanvas!;
+    const frameCtx = this.frameCtx!;
 
-    const frameCanvas = new OffscreenCanvas(this.outWidth!, this.outHeight!);
-    const frameCtx = frameCanvas.getContext("2d")!;
+    frameCtx.fillStyle = "black";
+    frameCtx.fillRect(0, 0, frameCanvas.width, frameCanvas.height);
+    osdCtx.clearRect(0, 0, osdCanvas.width, osdCanvas.height);
 
     let frameXOffset: number;
     if (this.hd || this.wide) {
-      frameXOffset = (this.outWidth! - frame.codedWidth) / 2;
+      frameXOffset = (this.outWidth! - frame.displayWidth) / 2;
     } else {
       frameXOffset = 0;
     }
@@ -118,27 +129,26 @@ export class VideoWorker {
               : this.fontPack!.sd2;
         }
 
-        osdContext.drawImage(
-          font.getTile(osdFrameChar),
+        osdCtx.drawImage(
+          font.getTile(osdFrameChar % TILES_PER_PAGE),
           x * this.osdReader!.header.config.fontWidth,
           y * this.osdReader!.header.config.fontHeight
         );
       }
     }
 
-    let osdXOffset: number;
-    if (this.hd || this.wide) {
-      osdXOffset = this.osdReader!.header.config.xOffset;
-    } else {
-      osdXOffset = 0;
-    }
+    const osdScale = frameCanvas.height / osdCanvas.height;
+    const osdWidth = osdCanvas.width * osdScale;
+    const osdHeight = osdCanvas.height * osdScale;
+    const osdXOffset = (frameCanvas.width - osdWidth) / 2;
+    const osdYOffset = (frameCanvas.height - osdHeight) / 2;
 
     frameCtx.drawImage(
       osdCanvas,
       osdXOffset,
-      0,
-      frameCanvas.width,
-      frameCanvas.height
+      osdYOffset,
+      osdWidth,
+      osdHeight
     );
 
     return new VideoFrame(frameCanvas as any, { timestamp: frame.timestamp! });
@@ -156,7 +166,7 @@ export class VideoWorker {
       type: VideoWorkerShared.MessageType.PROGRESS_UPDATE,
       currentFrame,
       preview,
-    });
+    }, [...(preview ? [preview] : [])]);
   }
 
   async onMessage(event: MessageEvent<VideoWorkerShared.Message>) {
