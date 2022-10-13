@@ -175,6 +175,7 @@ export default function OsdOverlay() {
           onChange={(e: any) => setVideoFile(e.target.files![0])}
           type="file"
           variant="filled"
+          disabled={inProgress}
         />
         <TextField
           id="osdFile"
@@ -184,6 +185,7 @@ export default function OsdOverlay() {
           onChange={(e: any) => setOsdFile(e.target.files![0])}
           type="file"
           variant="filled"
+          disabled={inProgress}
         />
         <TextField
           id="fontFiles"
@@ -196,6 +198,7 @@ export default function OsdOverlay() {
           onChange={(e: any) => setFontFiles([...e.target.files!])}
           type="file"
           variant="filled"
+          disabled={inProgress}
         />
 
         <Button
