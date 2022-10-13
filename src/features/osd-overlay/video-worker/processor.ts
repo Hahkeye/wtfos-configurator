@@ -66,6 +66,8 @@ export class Processor {
   progressInit: ProgressInitCallback;
   progressUpdate: ProgressCallback;
 
+  samples: MP4Box.VideoSample[] = [];
+
   constructor(options: ProcessorOptions) {
     this.infoReady = options.infoReady;
     this.modifyFrame = options.modifyFrame;
@@ -97,6 +99,8 @@ export class Processor {
       output: this.handleDecodedFrame.bind(this),
       error: this.handleDecoderError.bind(this),
     });
+
+    this.samples = [];
   }
 
   async processFile(file: File) {
@@ -146,7 +150,7 @@ export class Processor {
 
     this.progressInit(this.expectedFrames);
 
-    this.inFile!.setExtractionOptions(this.inInfo.videoTracks[0].id);
+    this.inFile!.setExtractionOptions(this.inInfo.videoTracks[0].id, { nbSamples: this.expectedFrames });
     this.inFile!.start();
     this.inFile!.flush();
   }
@@ -168,16 +172,32 @@ export class Processor {
 
   onInSamples(trackId: unknown, user: unknown, samples: MP4Box.VideoSample[]) {
     for (const sample of samples) {
-      const chunk = new EncodedVideoChunk({
-        data: sample.data,
-        duration: Math.floor((sample.duration / sample.timescale) * 1_000_000),
-        timestamp: Math.floor((sample.dts / sample.timescale) * 1_000_000),
-        type: sample.is_sync ? "key" : "delta",
-      });
-
-      this.decoder!.decode(chunk);
+      this.samples.push(sample);
     }
+
+    this.decodeNextSample();
   }
+
+  decodeNextSample() {
+    if (this.currentDecodingFrame >= this.expectedFrames) {
+      return;
+    }
+
+    const sample = this.samples.shift();
+    if (!sample) {
+      return;
+    }
+
+    const chunk = new EncodedVideoChunk({
+      data: sample.data,
+      duration: Math.floor((sample.duration / sample.timescale) * 1_000_000),
+      timestamp: Math.floor((sample.dts / sample.timescale) * 1_000_000),
+      type: sample.is_sync ? "key" : "delta",
+    });
+
+    this.decoder!.decode(chunk);
+  }
+
 
   handleDecodedFrame(frame: VideoFrame) {
     const modifiedFrame = this.modifyFrame!(frame, this.currentDecodingFrame);
@@ -230,13 +250,13 @@ export class Processor {
 
     if (this.currentEncodingFrame === this.expectedFrames) {
       const buffer = this.outFile!.getBuffer();
-      const blob = new Blob([buffer], { type: "video/mp4" });
-      const url = URL.createObjectURL(blob);
 
       postMessage({
         type: VideoWorkerShared.MessageType.FILE_OUT,
-        blobString: url,
-      } as VideoWorkerShared.FileOutMessage);
+        buffer,
+      } as VideoWorkerShared.FileOutMessage, [buffer]);
+    } else {
+      this.decodeNextSample();
     }
   }
 

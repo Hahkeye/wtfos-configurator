@@ -15,7 +15,7 @@ namespace VideoWorkerShared {
 
   export interface FileOutMessage {
     type: MessageType.FILE_OUT;
-    blobString: string;
+    buffer: ArrayBuffer;
   }
 
   export interface ProgressInitMessage {

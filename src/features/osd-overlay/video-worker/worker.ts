@@ -45,8 +45,6 @@ export class VideoWorker {
     const width = info.videoTracks[0].track_width;
     const height = info.videoTracks[0].track_height;
 
-    console.log(this.osdReader!.header.config);
-
     if (width === 1280 && height === 720) {
       this.wide = true;
     }
