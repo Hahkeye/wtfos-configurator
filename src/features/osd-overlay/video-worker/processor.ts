@@ -175,8 +175,8 @@ export class Processor {
     for (const sample of samples) {
       this.samples.push(sample);
     }
-
     if (this.samples.length === this.expectedFrames) {
+      this.currentEncodingFrame++;
       this.decodeNextSample();
     }
   }
