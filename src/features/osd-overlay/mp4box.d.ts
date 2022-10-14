@@ -51,6 +51,7 @@ declare module "mp4box" {
         user?: unknown,
         options?: unknown
       ): void;
+      releaseUsedSamples(trackId: number, sampleIndex: number): void;
     }
 
     interface AddTrackOptions {

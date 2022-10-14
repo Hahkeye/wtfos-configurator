@@ -138,6 +138,7 @@ export class Processor {
       height: options.height,
       bitrate: this.inInfo.videoTracks[0].bitrate,
       framerate: 60,
+      latencyMode: "realtime",
     });
 
     this.expectedFrames = this.inInfo.videoTracks[0].nb_samples;
@@ -146,7 +147,10 @@ export class Processor {
 
     this.progressInit(this.expectedFrames);
 
-    this.inFile!.setExtractionOptions(this.inInfo.videoTracks[0].id, null, { nbSamples: this.expectedFrames });
+    this.inFile!.setExtractionOptions(this.inInfo.videoTracks[0].id, undefined, {
+      nbSamples: 1,
+      rapAlignement: false,
+    });
     this.inFile!.start();
     this.inFile!.flush();
   }
@@ -161,6 +165,7 @@ export class Processor {
       description: avcCBoxToDescription(
         (this.inFile as any).moov.traks[0].mdia.minf.stbl.stsd.entries[0].avcC
       ),
+      optimizeForLatency: true,
     });
 
     this.infoReady(info);
@@ -173,20 +178,13 @@ export class Processor {
 
     if (this.samples.length === this.expectedFrames) {
       this.decodeNextSample();
-    } else {
-      console.debug(
-        `Mismatch in samples returning by mp4box and expected frames: ${this.samples.length} vs ${this.expectedFrames}`
-      );
     }
   }
 
   decodeNextSample() {
-    if (this.currentDecodingFrame >= this.expectedFrames) {
-      return;
-    }
-
     const sample = this.samples.shift();
     if (!sample) {
+      console.error("No sample?");
       return;
     }
 
@@ -205,6 +203,9 @@ export class Processor {
     const modifiedFrame = this.modifyFrame!(frame, this.currentDecodingFrame);
     frame.close();
 
+    if (this.currentDecodingFrame % 60 === 0) {
+      this.encoder!.flush();
+    }
     this.encoder!.encode(modifiedFrame, { keyFrame: this.currentDecodingFrame % 60 === 0 });
 
     if (this.currentDecodingFrame % 60 === 0) {
@@ -214,6 +215,9 @@ export class Processor {
     }
 
     this.currentDecodingFrame++;
+    this.inFile!.releaseUsedSamples(this.inInfo!.videoTracks[0].id, this.currentDecodingFrame);
+
+    console.debug((this.inFile as any).samplesDataSize!);
 
     modifiedFrame.close();
   }
