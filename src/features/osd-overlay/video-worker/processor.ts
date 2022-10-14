@@ -106,11 +106,6 @@ export class Processor {
   async processFile(file: File) {
     this.reset();
 
-    this.currentDecodingFrame = 0;
-    this.currentEncodingFrame = 0;
-    this.expectedFrames = 0;
-    this.outTrackId = undefined;
-
     const stream = file.stream();
     const reader = stream.getReader();
 
@@ -146,11 +141,12 @@ export class Processor {
     });
 
     this.expectedFrames = this.inInfo.videoTracks[0].nb_samples;
+    this.currentDecodingFrame = 0;
     this.currentEncodingFrame = 0;
 
     this.progressInit(this.expectedFrames);
 
-    this.inFile!.setExtractionOptions(this.inInfo.videoTracks[0].id, { nbSamples: this.expectedFrames });
+    this.inFile!.setExtractionOptions(this.inInfo.videoTracks[0].id, null, { nbSamples: this.expectedFrames });
     this.inFile!.start();
     this.inFile!.flush();
   }
@@ -177,6 +173,10 @@ export class Processor {
 
     if (this.samples.length === this.expectedFrames) {
       this.decodeNextSample();
+    } else {
+      console.debug(
+        `Mismatch in samples returning by mp4box and expected frames: ${this.samples.length} vs ${this.expectedFrames}`
+      );
     }
   }
 
