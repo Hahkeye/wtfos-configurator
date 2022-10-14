@@ -175,7 +175,9 @@ export class Processor {
       this.samples.push(sample);
     }
 
-    this.decodeNextSample();
+    if (this.samples.length === this.expectedFrames) {
+      this.decodeNextSample();
+    }
   }
 
   decodeNextSample() {
