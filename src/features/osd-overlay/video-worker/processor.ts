@@ -217,8 +217,6 @@ export class Processor {
     this.currentDecodingFrame++;
     this.inFile!.releaseUsedSamples(this.inInfo!.videoTracks[0].id, this.currentDecodingFrame);
 
-    console.debug((this.inFile as any).samplesDataSize!);
-
     modifiedFrame.close();
   }
 
